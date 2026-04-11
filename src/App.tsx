@@ -18,7 +18,25 @@ import { supabase } from './lib/supabase';
 import VoiceButton from './components/VoiceButton';
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// --- AI Setup ---
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (aiInstance) return aiInstance;
+  
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "undefined") {
+    return null;
+  }
+  
+  try {
+    aiInstance = new GoogleGenAI({ apiKey });
+    return aiInstance;
+  } catch (err) {
+    console.error("Failed to initialize Gemini AI:", err);
+    return null;
+  }
+};
 
 // --- Types ---
 interface MenuItem {
@@ -158,6 +176,12 @@ export default function App() {
 
     for (const item of itemsToUpdate) {
       try {
+        const ai = getAI();
+        if (!ai) {
+          console.warn("AI client not available for syncing embeddings.");
+          return;
+        }
+
         const textToEmbed = `${item.nombre}: ${item.descripcion}. Categoría: ${item.categoria}. Etiquetas: ${item.etiquetas?.join(', ') || ''}`;
         
         const result = await ai.models.embedContent({
@@ -184,6 +208,12 @@ export default function App() {
     if (!supabase) return menuItems.map(item => `${item.nombre} (${item.categoria}): ${item.descripcion} - $${item.precio}`).join('\n');
 
     try {
+      const ai = getAI();
+      if (!ai) {
+        console.warn("AI client not available for RAG context.");
+        return menuItems.map(item => `${item.nombre} (${item.categoria}): ${item.descripcion} - $${item.precio}`).join('\n');
+      }
+
       // 1. Generate embedding for the user query
       const embeddingResult = await ai.models.embedContent({
         model: 'gemini-embedding-2-preview',
@@ -226,6 +256,16 @@ export default function App() {
     setIsLoadingChat(true);
 
     try {
+      const ai = getAI();
+      if (!ai) {
+        setChatMessages(prev => [...prev, { 
+          role: 'model', 
+          text: "Lo siento, el sistema de Inteligencia Artificial no está configurado correctamente (falta la API Key). Por favor, contacta al administrador." 
+        }]);
+        setIsLoadingChat(false);
+        return;
+      }
+
       const menuContext = await getRelevantContext(currentInput);
       
       const systemInstruction = `
