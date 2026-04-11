@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import VoiceButton from './components/VoiceButton';
+import Navbar from './components/Navbar';
+import ProductCard from './components/ProductCard';
+import { SelectionProvider } from './context/SelectionContext';
 import { GoogleGenAI } from "@google/genai";
 
 // --- AI Setup ---
@@ -307,8 +310,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#f27d26] selection:text-white">
-      {/* --- Background Atmosphere --- */}
+    <SelectionProvider>
+      <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#f27d26] selection:text-white">
+        {/* --- Background Atmosphere --- */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#f27d26]/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#00ffcc]/5 blur-[120px] rounded-full" />
@@ -339,83 +343,18 @@ export default function App() {
       </header>
 
       {/* --- Categories --- */}
-      <nav className="sticky top-0 z-20 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 px-4 py-4 overflow-x-auto no-scrollbar flex gap-3">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-300 ${
-              activeCategory === cat.id 
-                ? 'bg-[#f27d26] text-white shadow-[0_0_20px_rgba(242,125,38,0.3)]' 
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            <cat.icon size={16} />
-            <span className="text-sm font-bold uppercase tracking-wider">{cat.name}</span>
-          </button>
-        ))}
-      </nav>
+      <Navbar 
+        categories={CATEGORIES} 
+        activeCategory={activeCategory} 
+        onCategoryChange={setActiveCategory} 
+      />
 
       {/* --- Menu Grid --- */}
       <main className="relative z-10 px-6 py-8 max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="group relative bg-white/5 border border-white/10 rounded-3xl p-6 hover:bg-white/[0.08] transition-all duration-500 overflow-hidden"
-              >
-                {/* Decorative Wood Texture Overlay (Simulated) */}
-                <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')]" />
-                
-                {item.imagen_url && (
-                  <div className="relative h-48 -mx-6 -mt-6 mb-6 overflow-hidden">
-                    <img 
-                      src={item.imagen_url} 
-                      alt={item.nombre}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 to-transparent" />
-                  </div>
-                )}
-
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold tracking-tight text-white group-hover:text-[#f27d26] transition-colors">
-                    {item.nombre}
-                  </h3>
-                  <span className="text-lg font-black text-[#00ffcc] drop-shadow-[0_0_8px_rgba(0,255,204,0.4)]">
-                    ${item.precio}
-                  </span>
-                </div>
-
-                {item.etiquetas && item.etiquetas.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {item.etiquetas.map((tag, idx) => (
-                      <span 
-                        key={idx} 
-                        className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full bg-[#f27d26]/10 text-[#f27d26] border border-[#f27d26]/20"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                
-                <p className="text-sm text-white/60 leading-relaxed mb-4">
-                  {item.descripcion}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-1 bg-white/10 rounded text-white/40">
-                    {item.categoria}
-                  </span>
-                </div>
-              </motion.div>
+              <ProductCard key={item.id} item={item} />
             ))}
           </AnimatePresence>
         </div>
@@ -525,5 +464,6 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+    </SelectionProvider>
   );
 }
