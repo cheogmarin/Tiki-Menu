@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS platillos (
 );-- Insertar algunos datos iniciales (Ejemplos del menú proporcionado)
 INSERT INTO platillos (nombre, descripcion, precio, categoria, etiquetas, imagen_url) VALUES
 -- Coctelería: Tiki Specials
-('Zombie', 'Un auténtico "resucita muertos". Enérgica combinación de ron extra dry, añejo y oscuro, potenciada con Brandy Spicy, fruta de la pasión, zumo de piña, lima y un toque de Angostura y canela.', 12.00, 'Coctelería', ARRAY['Fuerte', 'Exótico', 'Frutal'], 'https://i.ibb.co/FbM67g2Q/zombie.jpg'),
+('Zombie', 'Un auténtico "resucita muertos". Enérgica combinación de ron extra dry, añejo y oscuro, potenciada con Brandy Spicy, fruta de la pasión, zumo de piña, lima y un toque de Angostura y canela.', 12.00, 'Coctelería', ARRAY['Fuerte', 'Exótico', 'Frutal'], 'https://i.ibb.co/VWL5SyZw/Zobie-web.webp'),
 ('Tiki Electric Ice Beach Tea', 'Eléctrica y audaz. Ron Extra Dry, Vodka, Ginebra, Tequila, licor de melón, limonada y un toque vibrante de Blue Curaçao.', 12.00, 'Coctelería', ARRAY['Fuerte', 'Refrescante', 'Azul'], 'https://i.ibb.co/20k2WKqq/electric-tea.jpg'),
 ('Coco-Mango Loco', 'El Caribe en una copa. Mezcla espirituosa de Ron Batida de Coco, Vodka de Coco, Tequila, Tiki-Mix Falernum, puré de coco y mango.', 10.00, 'Coctelería', ARRAY['Tropical', 'Dulce', 'Frutal'], 'https://i.ibb.co/TBRKcqLQ/coco-mango-loco.avif'),
 ('Aku Aku', 'El balance perfecto. Ron Extra Dry, licor de melocotón, puré de maracuyá, zumo de lima, sirope de azúcar de caña y hierbabuena fresca.', 8.00, 'Coctelería', ARRAY['Ligero', 'Refrescante', 'Menta'], 'https://i.ibb.co/spsYKxQR/aku-aku.jpg'),
@@ -51,7 +51,7 @@ INSERT INTO platillos (nombre, descripcion, precio, categoria, etiquetas, imagen
 
 -- Cervezas
 -- De Barril
-('Caña de Barril', 'Cerveza de barril servida en caña.', 2.00, 'Cervezas', ARRAY['Fría', 'Ligera', 'Clásica'], 'https://images.unsplash.com/photo-1618885472179-5e474019f2a9?auto=format&fit=crop&q=80&w=600&h=400'),
+('Caña de Barril', 'Cerveza de barril servida en caña.', 2.00, 'Cervezas', ARRAY['Fría', 'Ligera', 'Clásica'], 'https://i.ibb.co/TDR6f86D/ca-a-de-barril.jpg'),
 ('Copa de Barril', 'Cerveza de barril servida en copa.', 2.50, 'Cervezas', ARRAY['Fría', 'Clásica', 'Refrescante'], 'https://picsum.photos/seed/beer-glass/600/400'),
 ('Pinta de Barril', 'Cerveza de barril servida en pinta.', 3.50, 'Cervezas', ARRAY['Grande', 'Fría', 'Clásica'], 'https://picsum.photos/seed/beer-pint/600/400'),
 ('Jarra de Barril', 'Cerveza de barril servida en jarra.', 7.00, 'Cervezas', ARRAY['Grande', 'Compartir', 'Fría'], 'https://picsum.photos/seed/beer-mug/600/400'),

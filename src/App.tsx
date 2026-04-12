@@ -113,7 +113,7 @@ export default function App() {
       console.error('Error fetching menu:', err);
       // Fallback data if Supabase is not configured yet
       setMenuItems([
-        { id: '1', nombre: 'Zombie', descripcion: 'Un auténtico "resucita muertos". Enérgica combinación de ron extra dry, añejo y oscuro, potenciada con Brandy Spicy, fruta de la pasión, zumo de piña, lima y un toque de Angostura y canela.', precio: 12, categoria: 'Coctelería', etiquetas: ['Fuerte', 'Exótico', 'Frutal'], imagen_url: 'https://i.ibb.co/FbM67g2Q/zombie.jpg' },
+        { id: '1', nombre: 'Zombie', descripcion: 'Un auténtico "resucita muertos". Enérgica combinación de ron extra dry, añejo y oscuro, potenciada con Brandy Spicy, fruta de la pasión, zumo de piña, lima y un toque de Angostura y canela.', precio: 12, categoria: 'Coctelería', etiquetas: ['Fuerte', 'Exótico', 'Frutal'], imagen_url: 'https://i.ibb.co/VWL5SyZw/Zobie-web.webp' },
         { id: '2', nombre: 'Tiki Electric Ice Beach Tea', descripcion: 'Eléctrica y audaz. Ron Extra Dry, Vodka, Ginebra, Tequila, licor de melón, limonada y un toque vibrante de Blue Curaçao.', precio: 12, categoria: 'Coctelería', etiquetas: ['Fuerte', 'Refrescante', 'Azul'], imagen_url: 'https://i.ibb.co/20k2WKqq/electric-tea.jpg' },
         { id: '3', nombre: 'Coco-Mango Loco', descripcion: 'El Caribe en una copa. Mezcla espirituosa de Ron Batida de Coco, Vodka de Coco, Tequila, Tiki-Mix Falernum, puré de coco y mango.', precio: 10, categoria: 'Coctelería', etiquetas: ['Tropical', 'Dulce', 'Frutal'], imagen_url: 'https://i.ibb.co/TBRKcqLQ/coco-mango-loco.avif' },
         { id: '4', nombre: 'Aku Aku', descripcion: 'El balance perfecto. Ron Extra Dry, licor de melocotón, puré de maracuyá, zumo de lima, sirope de azúcar de caña y hierbabuena fresca.', precio: 8, categoria: 'Coctelería', etiquetas: ['Ligero', 'Refrescante', 'Menta'], imagen_url: 'https://i.ibb.co/spsYKxQR/aku-aku.jpg' },
@@ -144,7 +144,7 @@ export default function App() {
         { id: '24', nombre: 'JW Blue Label', descripcion: 'Whisky de Lujo. El tope de gama de Johnnie Walker.', precio: 31, categoria: 'Licores', etiquetas: ['Lujo', 'Exclusivo', 'Intenso'], imagen_url: 'https://picsum.photos/seed/blue-label/600/400' },
         { id: '25', nombre: 'Jaime I', descripcion: 'Brandy de Lujo. Reserva de la familia Torres.', precio: 19, categoria: 'Licores', etiquetas: ['Elegante', 'Reserva', 'Fuerte'], imagen_url: 'https://picsum.photos/seed/brandy-jaime/600/400' },
         { id: '26', nombre: 'Don Julio Reposado', descripcion: 'Tequila Premium. Ideal para Cóctel Paloma.', precio: 9, categoria: 'Licores', etiquetas: ['Premium', 'Cítrico', 'Suave'], imagen_url: 'https://picsum.photos/seed/tequila-don-julio/600/400' },
-        { id: '27', nombre: 'Caña de Barril', descripcion: 'Cerveza de barril servida en caña.', precio: 2, categoria: 'Cervezas', etiquetas: ['Fría', 'Ligera', 'Clásica'], imagen_url: 'https://images.unsplash.com/photo-1618885472179-5e474019f2a9?auto=format&fit=crop&q=80&w=600&h=400' },
+        { id: '27', nombre: 'Caña de Barril', descripcion: 'Cerveza de barril servida en caña.', precio: 2, categoria: 'Cervezas', etiquetas: ['Fría', 'Ligera', 'Clásica'], imagen_url: 'https://i.ibb.co/TDR6f86D/ca-a-de-barril.jpg' },
         { id: '28', nombre: 'Jarra de Barril', descripcion: 'Cerveza de barril servida en jarra.', precio: 7, categoria: 'Cervezas', etiquetas: ['Grande', 'Compartir', 'Fría'], imagen_url: 'https://picsum.photos/seed/beer-mug/600/400' },
         { id: '29', nombre: 'Paulaner Trigo', descripcion: 'Cerveza de trigo alemana.', precio: 4, categoria: 'Cervezas', etiquetas: ['Trigo', 'Alemana', 'Cuerpo'], imagen_url: 'https://picsum.photos/seed/paulaner/600/400' },
         { id: '30', nombre: 'Heineken 0’0', descripcion: 'Cerveza sin alcohol.', precio: 2.5, categoria: 'Cervezas', etiquetas: ['Sin Alcohol', 'Ligera', 'Refrescante'], imagen_url: 'https://picsum.photos/seed/heineken/600/400' },
@@ -323,11 +323,14 @@ export default function App() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4"
+          className="mb-4 flex flex-col items-center"
         >
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic text-transparent bg-clip-text bg-gradient-to-r from-[#f27d26] to-[#ffcc33]">
-            Tiki Bar
-          </h1>
+          <img 
+            src="https://i.ibb.co/mrdTttLc/tiki-logo.png" 
+            alt="Tiki Bar Logo" 
+            className="h-32 md:h-48 w-auto mb-2 drop-shadow-[0_0_15px_rgba(242,125,38,0.3)]"
+            referrerPolicy="no-referrer"
+          />
           <p className="text-xs tracking-[0.3em] uppercase opacity-60 font-medium">Lechería · Venezuela</p>
         </motion.div>
 
