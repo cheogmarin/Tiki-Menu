@@ -12,7 +12,8 @@ import {
   Phone,
   Instagram,
   Dog,
-  Volume2
+  Volume2,
+  Download
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import VoiceButton from './components/VoiceButton';
@@ -70,6 +71,8 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState('Coctelería');
   const [mesa, setMesa] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoadingChat, setIsLoadingChat] = useState(false);
@@ -249,6 +252,30 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBtn(false);
+    }
+    setDeferredPrompt(null);
+  };
+
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
@@ -375,6 +402,23 @@ export default function App() {
             <Dog size={14} />
             <span>Pet Friendly</span>
           </div>
+
+          {showInstallBtn && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-12"
+            >
+              <button
+                onClick={handleInstallClick}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-[#f27d26] hover:text-white hover:border-[#f27d26] transition-all duration-300 group"
+              >
+                <Download size={18} className="group-hover:bounce" />
+                <span className="text-xs font-bold uppercase tracking-widest">Instalar App</span>
+              </button>
+              <p className="mt-3 text-[10px] text-white/20 uppercase tracking-tighter">Acceso rápido desde tu pantalla de inicio</p>
+            </motion.div>
+          )}
         </footer>
       </main>
 
