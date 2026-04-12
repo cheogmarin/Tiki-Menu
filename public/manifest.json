@@ -8,14 +8,16 @@
   "theme_color": "#f27d26",
   "icons": [
     {
-      "src": "https://picsum.photos/seed/tiki/192/192",
+      "src": "https://i.ibb.co/mrdTttLc/tiki-logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://picsum.photos/seed/tiki/512/512",
+      "src": "https://i.ibb.co/mrdTttLc/tiki-logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
