@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  @keyframes ring {
+    0%, 100% { transform: rotate(0deg); }
+    10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+    20%, 40%, 60%, 80% { transform: rotate(10deg); }
+  }
+}
+
 @layer utilities {
+  .animate-ring {
+    animation: ring 2s ease-in-out infinite;
+  }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

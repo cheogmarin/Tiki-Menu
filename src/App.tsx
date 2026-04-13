@@ -13,8 +13,11 @@ import {
   Instagram,
   Dog,
   Volume2,
-  Download
+  Download,
+  Bell
 } from 'lucide-react';
+import { Routes, Route } from 'react-router-dom';
+import StaffAdmin from './pages/StaffAdmin';
 import { supabase } from './lib/supabase';
 import VoiceButton from './components/VoiceButton';
 import Navbar from './components/Navbar';
@@ -76,6 +79,7 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // --- Initialization ---
@@ -276,6 +280,28 @@ export default function App() {
     setDeferredPrompt(null);
   };
 
+  const llamarAlMesonero = async () => {
+    if (!mesa) {
+      alert("Por favor, escanea un código QR de mesa para llamar al mesonero.");
+      return;
+    }
+
+    setIsCallingWaiter(true);
+    try {
+      const { error } = await supabase
+        .from('llamados')
+        .insert([{ mesa: mesa, estado: 'pendiente' }]);
+
+      if (error) throw error;
+      alert(`¡Llamado enviado! Un mesonero vendrá a la mesa ${mesa} pronto.`);
+    } catch (err) {
+      console.error('Error al llamar al mesonero:', err);
+      alert('Hubo un error al enviar el llamado. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsCallingWaiter(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
@@ -337,180 +363,197 @@ export default function App() {
   };
 
   return (
-    <SelectionProvider>
-      <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#f27d26] selection:text-white">
-        {/* --- Background Atmosphere --- */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#f27d26]/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#00ffcc]/5 blur-[120px] rounded-full" />
-      </div>
+    <Routes>
+      <Route path="/admin/staff" element={<StaffAdmin />} />
+      <Route path="/" element={
+        <SelectionProvider>
+          <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#f27d26] selection:text-white">
+            {/* --- Background Atmosphere --- */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#f27d26]/10 blur-[120px] rounded-full" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#00ffcc]/5 blur-[120px] rounded-full" />
+            </div>
 
-      {/* --- Header --- */}
-      <header className="relative z-10 px-6 pt-12 pb-8 flex flex-col items-center text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4 flex flex-col items-center"
-        >
-          <img 
-            src="https://i.ibb.co/mrdTttLc/tiki-logo.png" 
-            alt="Tiki Bar Logo" 
-            className="h-32 md:h-48 w-auto mb-2 drop-shadow-[0_0_15px_rgba(242,125,38,0.3)]"
-            referrerPolicy="no-referrer"
-          />
-          <p className="text-xs tracking-[0.3em] uppercase opacity-60 font-medium">Lechería · Venezuela</p>
-        </motion.div>
-
-        {mesa && (
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="mt-2 px-4 py-1 border border-[#f27d26]/30 rounded-full bg-[#f27d26]/10 text-[#f27d26] text-sm font-bold"
-          >
-            MESA {mesa}
-          </motion.div>
-        )}
-      </header>
-
-      {/* --- Categories --- */}
-      <Navbar 
-        categories={CATEGORIES} 
-        activeCategory={activeCategory} 
-        onCategoryChange={setActiveCategory} 
-      />
-
-      {/* --- Menu Grid --- */}
-      <main className="relative z-10 px-6 py-8 max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* --- Footer Info --- */}
-        <footer className="mt-20 pt-12 border-t border-white/10 text-center pb-24">
-          <div className="flex justify-center gap-8 mb-8">
-            <a href="https://instagram.com" className="text-white/40 hover:text-[#f27d26] transition-colors"><Instagram size={24} /></a>
-            <a href="tel:+584121801530" className="text-white/40 hover:text-[#f27d26] transition-colors"><Phone size={24} /></a>
-            <a href="#" className="text-white/40 hover:text-[#f27d26] transition-colors"><MapPin size={24} /></a>
-          </div>
-          <p className="text-sm text-white/40 mb-2 italic">"La felicidad debe aprovecharse en el momento que se presenta"</p>
-          <p className="text-lg font-black tracking-widest text-[#f27d26] uppercase">¡Okole Maluna!</p>
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-white/30 uppercase tracking-widest">
-            <Dog size={14} />
-            <span>Pet Friendly</span>
-          </div>
-
-          {showInstallBtn && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-12"
-            >
-              <button
-                onClick={handleInstallClick}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-[#f27d26] hover:text-white hover:border-[#f27d26] transition-all duration-300 group"
+            {/* --- Header --- */}
+            <header className="relative z-10 px-6 pt-12 pb-8 flex flex-col items-center text-center">
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 flex flex-col items-center"
               >
-                <Download size={18} className="group-hover:bounce" />
-                <span className="text-xs font-bold uppercase tracking-widest">Instalar App</span>
-              </button>
-              <p className="mt-3 text-[10px] text-white/20 uppercase tracking-tighter">Acceso rápido desde tu pantalla de inicio</p>
-            </motion.div>
-          )}
-        </footer>
-      </main>
-
-      {/* --- AI Chat Button --- */}
-      <button
-        onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-[#f27d26] rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(242,125,38,0.5)] hover:scale-110 active:scale-95 transition-all duration-300 group"
-      >
-        <MessageCircle className="text-white group-hover:rotate-12 transition-transform" size={32} />
-        <span className="absolute -top-2 -right-2 bg-[#00ffcc] text-[#0a0a0a] text-[10px] font-black px-2 py-1 rounded-full animate-bounce">
-          IA
-        </span>
-      </button>
-
-      {/* --- Chat Modal --- */}
-      <AnimatePresence>
-        {isChatOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed inset-0 z-[60] md:inset-auto md:bottom-28 md:right-8 md:w-[400px] md:h-[600px] bg-[#111] border border-white/10 md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-          >
-            {/* Chat Header */}
-            <div className="p-6 bg-gradient-to-r from-[#f27d26] to-[#ffcc33] flex justify-between items-center">
-              <div>
-                <h4 className="font-black uppercase tracking-tighter text-[#0a0a0a]">Mesero Virtual</h4>
-                <p className="text-[10px] uppercase tracking-widest text-[#0a0a0a]/60 font-bold">Tiki Bar Lechería</p>
-              </div>
-              <button onClick={() => setIsChatOpen(false)} className="p-2 hover:bg-black/10 rounded-full transition-colors">
-                <X size={24} className="text-[#0a0a0a]" />
-              </button>
-            </div>
-
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
-              {chatMessages.length === 0 && (
-                <div className="text-center py-10">
-                  <Palmtree className="mx-auto text-[#f27d26]/20 mb-4" size={48} />
-                  <p className="text-white/40 text-sm">¡Hola! Soy tu mesero virtual. ¿Qué te gustaría probar hoy? 🍹</p>
-                </div>
-              )}
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${
-                    msg.role === 'user' 
-                      ? 'bg-[#f27d26] text-white rounded-tr-none' 
-                      : 'bg-white/10 text-white/90 rounded-tl-none border border-white/5'
-                  }`}>
-                    {msg.text}
-                  </div>
-                  {msg.role === 'model' && (
-                    <VoiceButton text={msg.text} />
-                  )}
-                </div>
-              ))}
-              {isLoadingChat && (
-                <div className="flex justify-start">
-                  <div className="bg-white/10 p-4 rounded-2xl rounded-tl-none animate-pulse flex gap-1">
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Chat Input */}
-            <div className="p-6 border-t border-white/10 bg-[#0a0a0a]">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Pregúntame por una recomendación..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-sm focus:outline-none focus:border-[#f27d26] transition-colors"
+                <img 
+                  src="https://i.ibb.co/mrdTttLc/tiki-logo.png" 
+                  alt="Tiki Bar Logo" 
+                  className="h-32 md:h-48 w-auto mb-2 drop-shadow-[0_0_15px_rgba(242,125,38,0.3)]"
+                  referrerPolicy="no-referrer"
                 />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isLoadingChat}
-                  className="absolute right-2 top-2 bottom-2 w-12 bg-[#f27d26] rounded-xl flex items-center justify-center hover:bg-[#ff8c42] transition-colors disabled:opacity-50"
+                <p className="text-xs tracking-[0.3em] uppercase opacity-60 font-medium">Lechería · Venezuela</p>
+              </motion.div>
+
+              {mesa && (
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="mt-2 px-4 py-1 border border-[#f27d26]/30 rounded-full bg-[#f27d26]/10 text-[#f27d26] text-sm font-bold"
                 >
-                  <Send size={18} />
-                </button>
+                  MESA {mesa}
+                </motion.div>
+              )}
+            </header>
+
+            {/* --- Categories --- */}
+            <Navbar 
+              categories={CATEGORIES} 
+              activeCategory={activeCategory} 
+              onCategoryChange={setActiveCategory} 
+            />
+
+            {/* --- Menu Grid --- */}
+            <main className="relative z-10 px-6 py-8 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.map((item) => (
+                    <ProductCard key={item.id} item={item} />
+                  ))}
+                </AnimatePresence>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-    </SelectionProvider>
+
+              {/* --- Footer Info --- */}
+              <footer className="mt-20 pt-12 border-t border-white/10 text-center pb-24">
+                <div className="flex justify-center gap-8 mb-8">
+                  <a href="https://instagram.com" className="text-white/40 hover:text-[#f27d26] transition-colors"><Instagram size={24} /></a>
+                  <a href="tel:+584121801530" className="text-white/40 hover:text-[#f27d26] transition-colors"><Phone size={24} /></a>
+                  <a href="#" className="text-white/40 hover:text-[#f27d26] transition-colors"><MapPin size={24} /></a>
+                </div>
+                <p className="text-sm text-white/40 mb-2 italic">"La felicidad debe aprovecharse en el momento que se presenta"</p>
+                <p className="text-lg font-black tracking-widest text-[#f27d26] uppercase">¡Okole Maluna!</p>
+                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-white/30 uppercase tracking-widest">
+                  <Dog size={14} />
+                  <span>Pet Friendly</span>
+                </div>
+
+                {showInstallBtn && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-12"
+                  >
+                    <button
+                      onClick={handleInstallClick}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-[#f27d26] hover:text-white hover:border-[#f27d26] transition-all duration-300 group"
+                    >
+                      <Download size={18} className="group-hover:bounce" />
+                      <span className="text-xs font-bold uppercase tracking-widest">Instalar App</span>
+                    </button>
+                    <p className="mt-3 text-[10px] text-white/20 uppercase tracking-tighter">Acceso rápido desde tu pantalla de inicio</p>
+                  </motion.div>
+                )}
+              </footer>
+            </main>
+
+            {/* --- Call Waiter Button (Bottom Left) --- */}
+            <button
+              onClick={llamarAlMesonero}
+              disabled={isCallingWaiter}
+              className="fixed bottom-8 left-8 z-50 w-16 h-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center shadow-2xl hover:bg-[#f27d26] hover:border-[#f27d26] transition-all duration-300 group disabled:opacity-50"
+            >
+              <Bell className={`text-white group-hover:animate-ring ${isCallingWaiter ? 'animate-pulse' : ''}`} size={32} />
+              <span className="absolute -top-2 -left-2 bg-[#f27d26] text-white text-[10px] font-black px-2 py-1 rounded-full">
+                MESERO
+              </span>
+            </button>
+
+            {/* --- AI Chat Button (Bottom Right) --- */}
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="fixed bottom-8 right-8 z-50 w-16 h-16 bg-[#f27d26] rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(242,125,38,0.5)] hover:scale-110 active:scale-95 transition-all duration-300 group"
+            >
+              <MessageCircle className="text-white group-hover:rotate-12 transition-transform" size={32} />
+              <span className="absolute -top-2 -right-2 bg-[#00ffcc] text-[#0a0a0a] text-[10px] font-black px-2 py-1 rounded-full animate-bounce">
+                IA
+              </span>
+            </button>
+
+            {/* --- Chat Modal --- */}
+            <AnimatePresence>
+              {isChatOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 100, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 100, scale: 0.9 }}
+                  className="fixed inset-0 z-[60] md:inset-auto md:bottom-28 md:right-8 md:w-[400px] md:h-[600px] bg-[#111] border border-white/10 md:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+                >
+                  {/* Chat Header */}
+                  <div className="p-6 bg-gradient-to-r from-[#f27d26] to-[#ffcc33] flex justify-between items-center">
+                    <div>
+                      <h4 className="font-black uppercase tracking-tighter text-[#0a0a0a]">Mesero Virtual</h4>
+                      <p className="text-[10px] uppercase tracking-widest text-[#0a0a0a]/60 font-bold">Tiki Bar Lechería</p>
+                    </div>
+                    <button onClick={() => setIsChatOpen(false)} className="p-2 hover:bg-black/10 rounded-full transition-colors">
+                      <X size={24} className="text-[#0a0a0a]" />
+                    </button>
+                  </div>
+
+                  {/* Chat Messages */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
+                    {chatMessages.length === 0 && (
+                      <div className="text-center py-10">
+                        <Palmtree className="mx-auto text-[#f27d26]/20 mb-4" size={48} />
+                        <p className="text-white/40 text-sm">¡Hola! Soy tu mesero virtual. ¿Qué te gustaría probar hoy? 🍹</p>
+                      </div>
+                    )}
+                    {chatMessages.map((msg, i) => (
+                      <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                        <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${
+                          msg.role === 'user' 
+                            ? 'bg-[#f27d26] text-white rounded-tr-none' 
+                            : 'bg-white/10 text-white/90 rounded-tl-none border border-white/5'
+                        }`}>
+                          {msg.text}
+                        </div>
+                        {msg.role === 'model' && (
+                          <VoiceButton text={msg.text} />
+                        )}
+                      </div>
+                    ))}
+                    {isLoadingChat && (
+                      <div className="flex justify-start">
+                        <div className="bg-white/10 p-4 rounded-2xl rounded-tl-none animate-pulse flex gap-1">
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]" />
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]" />
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {/* Chat Input */}
+                  <div className="p-6 border-t border-white/10 bg-[#0a0a0a]">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder="Pregúntame por una recomendación..."
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-sm focus:outline-none focus:border-[#f27d26] transition-colors"
+                      />
+                      <button
+                        onClick={handleSendMessage}
+                        disabled={isLoadingChat}
+                        className="absolute right-2 top-2 bottom-2 w-12 bg-[#f27d26] rounded-xl flex items-center justify-center hover:bg-[#ff8c42] transition-colors disabled:opacity-50"
+                      >
+                        <Send size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </SelectionProvider>
+      } />
+    </Routes>
   );
 }
