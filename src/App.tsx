@@ -281,6 +281,11 @@ export default function App() {
   };
 
   const llamarAlMesonero = async () => {
+    if (!supabase) {
+      alert("El sistema de llamados no está configurado (faltan las claves de Supabase en Netlify).");
+      return;
+    }
+
     if (!mesa) {
       alert("Por favor, escanea un código QR de mesa para llamar al mesonero.");
       return;

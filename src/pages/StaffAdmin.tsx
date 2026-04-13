@@ -15,6 +15,8 @@ export default function StaffAdmin() {
   const [audio] = useState(new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'));
 
   useEffect(() => {
+    if (!supabase) return;
+
     fetchLlamados();
 
     // Suscribirse a cambios en tiempo real
@@ -46,11 +48,12 @@ export default function StaffAdmin() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (supabase) supabase.removeChannel(channel);
     };
   }, []);
 
   const fetchLlamados = async () => {
+    if (!supabase) return;
     const { data, error } = await supabase
       .from('llamados')
       .select('*')
@@ -62,6 +65,7 @@ export default function StaffAdmin() {
   };
 
   const markAsAtendido = async (id: number) => {
+    if (!supabase) return;
     const { error } = await supabase
       .from('llamados')
       .update({ estado: 'atendido' })
@@ -71,6 +75,7 @@ export default function StaffAdmin() {
   };
 
   const deleteLlamado = async (id: number) => {
+    if (!supabase) return;
     const { error } = await supabase
       .from('llamados')
       .delete()
@@ -87,12 +92,23 @@ export default function StaffAdmin() {
           <p className="text-white/40 text-sm uppercase tracking-widest">Tiki Bar Lechería · Llamados en tiempo real</p>
         </div>
         <div className="bg-[#f27d26]/10 px-4 py-2 rounded-full border border-[#f27d26]/30 flex items-center gap-2">
-          <div className="w-2 h-2 bg-[#00ffcc] rounded-full animate-pulse" />
-          <span className="text-[#f27d26] text-xs font-bold uppercase tracking-widest">En Línea</span>
+          <div className={`w-2 h-2 ${supabase ? 'bg-[#00ffcc]' : 'bg-red-500'} rounded-full animate-pulse`} />
+          <span className="text-[#f27d26] text-xs font-bold uppercase tracking-widest">
+            {supabase ? 'En Línea' : 'Desconectado'}
+          </span>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto">
+        {!supabase && (
+          <div className="bg-red-500/10 border border-red-500/30 p-8 rounded-3xl text-center mb-8">
+            <h2 className="text-red-500 font-bold mb-2 uppercase tracking-tight">Error de Configuración</h2>
+            <p className="text-white/60 text-sm">
+              No se han configurado las variables de Supabase en Netlify. 
+              Por favor, añade <code className="bg-black/20 px-1 rounded">VITE_SUPABASE_URL</code> y <code className="bg-black/20 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> en el panel de Netlify.
+            </p>
+          </div>
+        )}
         <div className="grid gap-4">
           <AnimatePresence mode="popLayout">
             {llamados.length === 0 ? (

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface MenuItem {
   id: string;
@@ -14,50 +14,30 @@ interface SelectionContextType {
   selectedItems: MenuItem[];
   toggleItem: (item: MenuItem) => void;
   clearSelection: () => void;
-  totalPrice: number;
+  total: number;
 }
 
 const SelectionContext = createContext<SelectionContextType | undefined>(undefined);
 
-export const SelectionProvider = ({ children }: { children: ReactNode }) => {
+export const SelectionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [selectedItems, setSelectedItems] = useState<MenuItem[]>([]);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('tiki_selection');
-    if (saved) {
-      try {
-        setSelectedItems(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error parsing saved selection', e);
-      }
-    }
-  }, []);
-
-  // Save to localStorage on change
-  useEffect(() => {
-    localStorage.setItem('tiki_selection', JSON.stringify(selectedItems));
-  }, [selectedItems]);
 
   const toggleItem = (item: MenuItem) => {
     setSelectedItems((prev) => {
-      const isSelected = prev.find((i) => i.id === item.id);
-      if (isSelected) {
+      const exists = prev.find((i) => i.id === item.id);
+      if (exists) {
         return prev.filter((i) => i.id !== item.id);
-      } else {
-        return [...prev, item];
       }
+      return [...prev, item];
     });
   };
 
-  const clearSelection = () => {
-    setSelectedItems([]);
-  };
+  const clearSelection = () => setSelectedItems([]);
 
-  const totalPrice = selectedItems.reduce((acc, item) => acc + item.precio, 0);
+  const total = selectedItems.reduce((acc, item) => acc + item.precio, 0);
 
   return (
-    <SelectionContext.Provider value={{ selectedItems, toggleItem, clearSelection, totalPrice }}>
+    <SelectionContext.Provider value={{ selectedItems, toggleItem, clearSelection, total }}>
       {children}
     </SelectionContext.Provider>
   );
@@ -65,7 +45,7 @@ export const SelectionProvider = ({ children }: { children: ReactNode }) => {
 
 export const useSelection = () => {
   const context = useContext(SelectionContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useSelection must be used within a SelectionProvider');
   }
   return context;
