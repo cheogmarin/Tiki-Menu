@@ -73,6 +73,8 @@ export default function App() {
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('Coctelería');
   const [mesa, setMesa] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -84,13 +86,67 @@ export default function App() {
 
   // --- Initialization ---
   useEffect(() => {
-    // Get Table ID from URL
+    // Get Token from URL (support ?token= or ?t=)
     const params = new URLSearchParams(window.location.search);
-    setMesa(params.get('mesa'));
+    const tableToken = params.get('token') || params.get('t') || params.get('mesa') || params.get('m');
+    
+    if (tableToken) {
+      setToken(tableToken);
+      validateToken(tableToken);
+    }
+
+    // Check Cooldown from localStorage
+    const savedCooldown = localStorage.getItem('tiki_waiter_cooldown');
+    if (savedCooldown) {
+      const remaining = Math.floor((parseInt(savedCooldown) - Date.now()) / 1000);
+      if (remaining > 0) {
+        setCooldown(remaining);
+      }
+    }
 
     // Fetch Menu from Supabase
     fetchMenu();
   }, []);
+
+  // Cooldown Timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setInterval(() => {
+        setCooldown((prev) => {
+          if (prev <= 1) {
+            localStorage.removeItem('tiki_waiter_cooldown');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [cooldown]);
+
+  const validateToken = async (tokenToValidate: string) => {
+    if (!supabase) return;
+    
+    try {
+      // Check if it's a UUID (token) or a direct number (legacy support)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tokenToValidate);
+      
+      if (isUUID) {
+        const { data, error } = await supabase
+          .from('mesas')
+          .select('numero')
+          .eq('id', tokenToValidate)
+          .single();
+        
+        if (data) setMesa(data.numero);
+      } else {
+        // Legacy support for direct mesa numbers
+        setMesa(tokenToValidate);
+      }
+    } catch (err) {
+      console.error('Error validating token:', err);
+    }
+  };
 
   useEffect(() => {
     setFilteredItems(menuItems.filter(item => item.categoria === activeCategory));
@@ -282,24 +338,40 @@ export default function App() {
 
   const llamarAlMesonero = async () => {
     if (!supabase) {
-      alert("El sistema de llamados no está configurado (faltan las claves de Supabase en Netlify).");
+      alert("El sistema de llamados no está configurado.");
       return;
     }
 
-    if (!mesa) {
-      alert("Por favor, escanea un código QR de mesa para llamar al mesonero.");
+    if (!token && !mesa) {
+      alert("Por favor, escanea un código QR de mesa válido.");
       return;
     }
+
+    if (cooldown > 0) return;
 
     setIsCallingWaiter(true);
     try {
-      const { error } = await supabase
-        .from('llamados')
-        .insert([{ mesa: mesa, estado: 'pendiente' }]);
+      // Usar la función RPC para bloqueo inteligente y validación
+      const { data, error } = await supabase.rpc('llamar_mesonero_seguro', {
+        p_token: token
+      });
 
       if (error) throw error;
-      alert(`¡Llamado enviado! Un mesonero vendrá a la mesa ${mesa} pronto.`);
-    } catch (err) {
+
+      if (data.success) {
+        alert(`¡Llamado enviado! Un mesonero vendrá a la mesa ${data.mesa} pronto.`);
+        // Iniciar cooldown de 3 minutos (180s)
+        const endTime = Date.now() + 180000;
+        localStorage.setItem('tiki_waiter_cooldown', endTime.toString());
+        setCooldown(180);
+      } else if (data.already_called) {
+        alert(data.message);
+        // Si ya llamaron, también activamos el cooldown local para evitar spam
+        setCooldown(180);
+      } else {
+        alert(data.message || 'Error al procesar el llamado.');
+      }
+    } catch (err: any) {
       console.error('Error al llamar al mesonero:', err);
       alert('Hubo un error al enviar el llamado. Por favor, inténtalo de nuevo.');
     } finally {
@@ -459,12 +531,12 @@ export default function App() {
             {/* --- Call Waiter Button (Bottom Left) --- */}
             <button
               onClick={llamarAlMesonero}
-              disabled={isCallingWaiter}
+              disabled={isCallingWaiter || cooldown > 0}
               className="fixed bottom-8 left-8 z-50 w-16 h-16 bg-white/10 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center shadow-2xl hover:bg-[#f27d26] hover:border-[#f27d26] transition-all duration-300 group disabled:opacity-50"
             >
               <Bell className={`text-white group-hover:animate-ring ${isCallingWaiter ? 'animate-pulse' : ''}`} size={32} />
               <span className="absolute -top-2 -left-2 bg-[#f27d26] text-white text-[10px] font-black px-2 py-1 rounded-full">
-                MESERO
+                {cooldown > 0 ? `${Math.floor(cooldown / 60)}:${(cooldown % 60).toString().padStart(2, '0')}` : 'MESERO'}
               </span>
             </button>
 

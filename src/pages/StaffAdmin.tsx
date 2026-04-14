@@ -5,7 +5,7 @@ import { Bell, Check, Clock, Trash2 } from 'lucide-react';
 
 interface Llamado {
   id: number;
-  mesa: string;
+  mesa_numero: string;
   estado: 'pendiente' | 'atendido';
   created_at: string;
 }
@@ -138,10 +138,10 @@ export default function StaffAdmin() {
                     <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black ${
                       llamado.estado === 'pendiente' ? 'bg-[#f27d26] text-white' : 'bg-white/10 text-white/40'
                     }`}>
-                      {llamado.mesa}
+                      {llamado.mesa_numero}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold uppercase tracking-tight">Mesa {llamado.mesa}</h3>
+                      <h3 className="text-xl font-bold uppercase tracking-tight">Mesa {llamado.mesa_numero}</h3>
                       <div className="flex items-center gap-2 text-white/40 text-xs mt-1">
                         <Clock size={12} />
                         <span>{new Date(llamado.created_at).toLocaleTimeString()}</span>
