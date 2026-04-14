@@ -173,8 +173,13 @@ CREATE TABLE IF NOT EXISTS mesas (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insertar algunas mesas de ejemplo (puedes generar más luego)
-INSERT INTO mesas (numero) VALUES ('1'), ('2'), ('3'), ('4'), ('5') ON CONFLICT DO NOTHING;
+-- Insertar mesas del 1 al 20
+INSERT INTO mesas (numero) VALUES 
+('1'), ('2'), ('3'), ('4'), ('5'), 
+('6'), ('7'), ('8'), ('9'), ('10'), 
+('11'), ('12'), ('13'), ('14'), ('15'), 
+('16'), ('17'), ('18'), ('19'), ('20') 
+ON CONFLICT (numero) DO NOTHING;
 
 -- Tabla para llamados al mesonero (Actualizada)
 CREATE TABLE IF NOT EXISTS llamados (
