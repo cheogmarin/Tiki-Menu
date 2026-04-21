@@ -33,9 +33,21 @@ export default function VoiceButton({ text }: VoiceButtonProps) {
     
     const setVoice = () => {
       const voices = window.speechSynthesis.getVoices();
-      const spanishVoice = voices.find(v => v.lang.startsWith('es-ES') || v.lang.startsWith('es-MX'));
-      if (spanishVoice) {
-        utterance.voice = spanishVoice;
+      
+      // Intentamos encontrar una voz de Google en español primero (suelen ser de mejor calidad)
+      const googleSpanish = voices.find(
+        v => (v.lang.startsWith('es-ES') || v.lang.startsWith('es-MX')) && v.name.includes('Google')
+      );
+      
+      // Si no hay Google, cualquier voz en español
+      const generalSpanish = voices.find(
+        v => v.lang.startsWith('es-ES') || v.lang.startsWith('es-MX')
+      );
+
+      if (googleSpanish) {
+        utterance.voice = googleSpanish;
+      } else if (generalSpanish) {
+        utterance.voice = generalSpanish;
       }
     };
 
