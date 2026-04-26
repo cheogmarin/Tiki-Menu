@@ -459,7 +459,7 @@ export default function App() {
                 className="mb-4 flex flex-col items-center"
               >
                 <img 
-                  src="https://i.ibb.co/mrdTttLc/tiki-logo.png" 
+                  src="https://i.ibb.co/v6JrDgKn/tiki-logo.webp" 
                   alt="Tiki Bar Logo" 
                   className="h-32 md:h-48 w-auto mb-2 drop-shadow-[0_0_15px_rgba(242,125,38,0.3)]"
                   referrerPolicy="no-referrer"
